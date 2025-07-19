@@ -67,4 +67,24 @@ public class RateLimitRule{
 
     }
 
+
+    public RateLimitAlgorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public int getWindowSeconds() {
+        return windowSeconds;
+    }
+
+    public double getRefillRate() {
+        return refillRate;
+    }
+
+    public int getBucketSize() {
+        return bucketSize;
+    }
 }
