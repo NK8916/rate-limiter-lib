@@ -1,11 +1,11 @@
 package io.github.NK8916.ratelimiter.api;
 
 public class RateLimitRule{
-    private RateLimitAlgorithm algorithm;
-    private int limit;
-    private int windowSeconds;
-    private double refillRate;
-    private int bucketSize;
+    private final RateLimitAlgorithm algorithm;
+    private final int limit;
+    private final int windowSeconds;
+    private final double refillRate;
+    private final int bucketSize;
 
     private RateLimitRule(Builder builder){
         this.algorithm=builder.algorithm;

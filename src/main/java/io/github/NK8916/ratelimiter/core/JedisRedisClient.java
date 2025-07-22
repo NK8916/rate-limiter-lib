@@ -48,7 +48,7 @@ public class JedisRedisClient implements RedisClient{
         try(Jedis jedis=jedisPool.getResource()){
             long now=System.currentTimeMillis()/1000;
 
-            Object result=jedis.eval(tokenBucketLua, Collections.singletonList(key), List.of(String.valueOf(now),String.valueOf(rule.getRefillRate()),String.valueOf(rule.getBucketSize()),"1"));
+            Object result=jedis.eval(slidingWindowLua, Collections.singletonList(key), List.of(String.valueOf(now),String.valueOf(rule.getRefillRate()),String.valueOf(rule.getBucketSize()),"1"));
             return "1".equals(result.toString());
         }
     }
