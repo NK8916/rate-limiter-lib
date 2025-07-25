@@ -10,10 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RateLimiterFactory {
-    private final Map<RateLimitAlgorithm, RateLimiterStrategy> strategies;
+    private final Map<RateLimitAlgorithm, RateLimiterStrategy> strategies=new HashMap<>();
 
     public RateLimiterFactory(RedisClient redis){
-        strategies=new HashMap<>();
         strategies.put(RateLimitAlgorithm.TOKEN_BUCKET,new TokenBucketStrategy(redis));
         strategies.put(RateLimitAlgorithm.FIXED_WINDOW,new FixedWindowStrategy(redis));
         strategies.put(RateLimitAlgorithm.SLIDING_WINDOW_LOG,new SlidingWindowStrategy(redis));

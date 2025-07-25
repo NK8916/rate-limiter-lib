@@ -4,10 +4,13 @@ import io.github.NK8916.ratelimiter.api.RateLimitRule;
 import io.github.NK8916.ratelimiter.core.RedisClient;
 
 public class SlidingWindowStrategy implements RateLimiterStrategy{
-    public SlidingWindowStrategy(RedisClient redis){}
+    private final RedisClient redis;
+    public SlidingWindowStrategy(RedisClient redis){
+        this.redis=redis;
+    }
 
     @Override
     public boolean isAllowed(String key, RateLimitRule rule) {
-        return false;
+        return this.redis.runSlidingWindowLua(key,rule);
     }
 }
