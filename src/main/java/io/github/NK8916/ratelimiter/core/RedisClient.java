@@ -10,6 +10,7 @@ public interface RedisClient {
     void delete(String key);
     boolean runTokenBucketLua(String key, RateLimitRule rule);
     boolean runSlidingWindowLua(String key,RateLimitRule rule);
+    boolean runFixedWindowLua(String key,RateLimitRule rule);
     Set<String> keys(String pattern);
     String ping();
     void close();

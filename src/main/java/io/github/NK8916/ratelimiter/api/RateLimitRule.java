@@ -1,11 +1,13 @@
 package io.github.NK8916.ratelimiter.api;
 
+import java.util.Objects;
+
 public class RateLimitRule{
     private final RateLimitAlgorithm algorithm;
-    private final int limit;
-    private final int windowSeconds;
-    private final double refillRate;
-    private final int bucketSize;
+    private final Integer limit;
+    private final Integer windowSeconds;
+    private final Double refillRate;
+    private final Integer bucketSize;
 
     private RateLimitRule(Builder builder){
         this.algorithm=builder.algorithm;
@@ -31,37 +33,48 @@ public class RateLimitRule{
 
     public static class Builder{
         private RateLimitAlgorithm algorithm;
-        private int limit;
-        private int windowSeconds;
-        private double refillRate;
-        private int bucketSize;
+        private Integer limit;
+        private Integer windowSeconds;
+        private Double refillRate;
+        private Integer bucketSize;
 
         public Builder algorithm(RateLimitAlgorithm algorithm){
             this.algorithm=algorithm;
             return this;
         }
 
-        public Builder limit(int limit){
+        public Builder limit(Integer limit){
             this.limit=limit;
             return this;
         }
 
-        public Builder windowSeconds(int seconds) {
+        public Builder windowSeconds(Integer seconds) {
             this.windowSeconds = seconds;
             return this;
         }
 
-        public Builder refillRate(double rate){
+        public Builder refillRate(Double rate){
             this.refillRate=rate;
             return this;
         }
 
-        public Builder bucketSize(int size){
+        public Builder bucketSize(Integer size){
             this.bucketSize=size;
             return this;
         }
 
         public RateLimitRule build(){
+            switch (this.algorithm) {
+                case TOKEN_BUCKET:
+                    Objects.requireNonNull(refillRate, "refillRate is required for Token Bucket");
+                    Objects.requireNonNull(bucketSize, "bucketSize is required for Token Bucket");
+                    break;
+                case FIXED_WINDOW:
+                case SLIDING_WINDOW_LOG:
+                    Objects.requireNonNull(limit, "limit is required");
+                    Objects.requireNonNull(windowSeconds, "windowSeconds is required");
+                    break;
+            }
             return new RateLimitRule(this);
         }
 
@@ -72,19 +85,19 @@ public class RateLimitRule{
         return algorithm;
     }
 
-    public int getLimit() {
+    public Integer getLimit() {
         return limit;
     }
 
-    public int getWindowSeconds() {
+    public Integer getWindowSeconds() {
         return windowSeconds;
     }
 
-    public double getRefillRate() {
+    public Double getRefillRate() {
         return refillRate;
     }
 
-    public int getBucketSize() {
+    public Integer getBucketSize() {
         return bucketSize;
     }
 }

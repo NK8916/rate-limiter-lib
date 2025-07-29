@@ -1,8 +1,8 @@
-local key= KEYS[1]
-local now=tonumber(ARGV[1])
-local refill_rate=tonumber(ARGV[2])
-local capacity=tonumber(ARGV[3])
-local cost=tonumber(ARGV[4])
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local refill_rate = tonumber(ARGV[2])
+local capacity = tonumber(ARGV[3])
+local cost = tonumber(ARGV[5])
 
 local bucket=redis.call("HMGET",key,"tokens","timestamp")
 local tokens=tonumber(bucket[1]) or capacity
@@ -13,11 +13,11 @@ tokens=math.min(capacity,tokens+delta*refill_rate)
 
 if tokens>=cost then
     tokens=tokens-cost
-    redis.call("HMSET",key,"tokens","timestamp",now)
+    redis.call("HSET",key,"tokens",tokens,"timestamp",now)
     redis.call("EXPIRE",key,60)
     return 1
 else
-    redis.call("HMSET",key,"tokens","timestamp",now)
+    redis.call("HSET",key,"tokens",tokens,"timestamp",now)
     redis.call("EXPIRE",key,60)
     return 0
 end

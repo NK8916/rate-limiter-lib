@@ -1,7 +1,8 @@
 local key = KEYS[1]
 local now = tonumber(ARGV[1])
-local window = tonumber(ARGV[2])
+local window = tonumber(ARGV[4])
 local limit = tonumber(ARGV[3])
+local cost = tonumber(ARGV[5])
 
 -- remove timestamps older than (now - window)
 redis.call("LTRIM", key, 0, limit - 1) -- optional: keep size trimmed

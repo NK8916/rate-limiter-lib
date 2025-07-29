@@ -16,6 +16,7 @@ public class JedisRedisClient implements RedisClient{
     private final JedisPool jedisPool;
     private final String tokenBucketLua;
     private final String slidingWindowLua;
+    private final String fixedWindowLua;
 
     public JedisRedisClient(String host,int port) throws IOException {
         this.jedisPool=new JedisPool(host,port);
@@ -27,6 +28,21 @@ public class JedisRedisClient implements RedisClient{
             if (is == null) throw new FileNotFoundException("sliding_window.lua not found in classpath");
             this.slidingWindowLua = new String(is.readAllBytes(), StandardCharsets.UTF_8);
         }
+
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("fixed_window_counter.lua")) {
+            if (is == null) throw new FileNotFoundException("fixed_window_counter.lua not found in classpath");
+            this.fixedWindowLua = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private List<String> buildCommonArgs(long now, RateLimitRule rule, int cost) {
+        return List.of(
+                String.valueOf(now),
+                String.valueOf(rule.getRefillRate() != null ? rule.getRefillRate() : 0),
+                String.valueOf(rule.getBucketSize() != null ? rule.getBucketSize() : rule.getLimit()),
+                String.valueOf(rule.getWindowSeconds() != null ? rule.getWindowSeconds() : 0),
+                String.valueOf(cost)
+        );
     }
 
     @Override
@@ -61,7 +77,7 @@ public class JedisRedisClient implements RedisClient{
     public boolean runTokenBucketLua(String key, RateLimitRule rule){
         try(Jedis jedis=jedisPool.getResource()){
             long now=System.currentTimeMillis()/1000;
-            Object result=jedis.eval(tokenBucketLua, Collections.singletonList(getRedisKey(key)), List.of(String.valueOf(now),String.valueOf(rule.getRefillRate()),String.valueOf(rule.getBucketSize()),"1"));
+            Object result=jedis.eval(tokenBucketLua, Collections.singletonList(getRedisKey(key)), buildCommonArgs(now,rule,1));
             return "1".equals(result.toString());
         }
     }
@@ -71,7 +87,16 @@ public class JedisRedisClient implements RedisClient{
     public boolean runSlidingWindowLua(String key, RateLimitRule rule){
         try(Jedis jedis=jedisPool.getResource()){
             long now=System.currentTimeMillis()/1000;
-            Object result=jedis.eval(slidingWindowLua, Collections.singletonList(getRedisKey(key)), List.of(String.valueOf(now),String.valueOf(rule.getWindowSeconds()),String.valueOf(rule.getLimit()),"1"));
+            Object result=jedis.eval(slidingWindowLua, Collections.singletonList(getRedisKey(key)), buildCommonArgs(now,rule,1));
+            return "1".equals(result.toString());
+        }
+    }
+
+    @Override
+    public boolean runFixedWindowLua(String key, RateLimitRule rule){
+        try(Jedis jedis=jedisPool.getResource()){
+            long now=System.currentTimeMillis()/1000;
+            Object result=jedis.eval(fixedWindowLua, Collections.singletonList(getRedisKey(key)), buildCommonArgs(now,rule,1));
             return "1".equals(result.toString());
         }
     }
